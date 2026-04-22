@@ -4,19 +4,24 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AppTest {
+
+    // Original test
     @Test
     void testGreet() {
-        assertEquals("Hello, Jenkins! Welcome to Jenkins CI/CD!", 
+        assertEquals("Hello, Jenkins! Welcome to Jenkins CI/CD!",
                       App.greet("Jenkins"));
     }
 
+    // New test → multiply
     @Test
-    void testAdd() {
-        assertEquals(5, App.add(2, 3));
+    void testMultiply() {
+        assertEquals(15, App.multiply(5, 3));
     }
 
+    // New test → isEven
     @Test
-    void testAddNegative() {
-        assertEquals(-1, App.add(2, -3));
+    void testIsEven() {
+        assertEquals(true,  App.isEven(4));
+        assertEquals(false, App.isEven(7));
     }
 }
