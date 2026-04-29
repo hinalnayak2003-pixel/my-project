@@ -1,70 +1,66 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven-3.6.3'
-        jdk   'JDK-17'
+    triggers {
+        pollSCM('H/5 * * * *')
     }
 
     environment {
-        APP_NAME = 'my-java-app'
-        VERSION  = '1.0-SNAPSHOT'
+        GITHUB_TOKEN = credentials('github-token')
     }
 
     stages {
-
-        stage('Checkout') {
+        stage('Pull Latest') {
             steps {
-                echo "Cloning repository..."
-                checkout scm
+                sh 'git fetch --all'
+                sh "git pull origin ${env.BRANCH_NAME}"
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Check Changes') {
             steps {
-                echo "Downloading Maven dependencies..."
-                sh 'mvn dependency:resolve'
+                sh 'git log --oneline -5'
+                sh '''
+                    if [ $(git rev-list --count HEAD) -gt 1 ]; then
+                        echo "=== Changes ==="
+                        git diff HEAD~1 HEAD
+                    else
+                        echo "First commit!"
+                    fi
+                '''
             }
         }
 
         stage('Build') {
             steps {
-                echo "Compiling Java source code..."
-                sh 'mvn clean compile'
+                echo "Building: ${env.BRANCH_NAME}"
+                sh 'mvn clean install'
             }
         }
 
-        stage('Test') {
-            steps {
-                echo "Running JUnit 5 tests..."
-                sh 'mvn test'
+        stage('Auto Merge to main') {
+            when {
+                not { branch 'main' }
             }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
-        }
-
-        stage('Package') {
             steps {
-                echo "Packaging into JAR..."
-                sh 'mvn package -DskipTests'
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                sh """
+                    git config user.email "jenkins@jenkins.com"
+                    git config user.name "Jenkins"
+                    git fetch origin main
+                    git checkout -b main origin/main
+                    git merge origin/${env.BRANCH_NAME}
+                    git push https://hinalnayak2003-pixel:${GITHUB_TOKEN}@github.com/hinalnayak2003-pixel/abc.git main
+                """
             }
         }
     }
 
     post {
         success {
-            echo "✅ Pipeline SUCCESS — ${APP_NAME} v${VERSION} built and tested!"
+            echo "✅ ${env.BRANCH_NAME} merged to main!"
         }
         failure {
-            echo "❌ Pipeline FAILED — Check the logs above!"
-        }
-        always {
-            echo "Cleaning workspace..."
-            cleanWs()
+            echo "❌ Failed on ${env.BRANCH_NAME}!"
         }
     }
 }
