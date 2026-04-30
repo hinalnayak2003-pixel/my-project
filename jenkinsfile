@@ -36,6 +36,10 @@ pipeline {
 
         stage('Auto Merge to feature') {
             steps {
+<<<<<<< HEAD
+=======
+demo
+>>>>>>> 736d6b6def89730a18ed5b714929d52ce4dee457
                 withCredentials([usernamePassword(
                     credentialsId: 'github-token',
                     usernameVariable: 'GIT_USER',
@@ -52,6 +56,20 @@ pipeline {
                         git push https://${GIT_USER}:${GIT_PASS}@github.com/hinalnayak2003-pixel/my-project.git feature
                     """
                 }
+<<<<<<< HEAD
+=======
+
+                sh """
+                    git config user.email "jenkins@jenkins.com"
+                    git config user.name "Jenkins"
+                    git fetch origin feature
+                    git checkout -b feature origin/feature
+                    git pull origin feature
+                    git merge origin/${env.BRANCH_NAME} --no-edit
+                    git push https://hinalnayak2003-pixel:${GITHUB_TOKEN}@github.com/hinalnayak2003-pixel/my-project.git feature
+                """
+main
+>>>>>>> 736d6b6def89730a18ed5b714929d52ce4dee457
             }
         }
     }
