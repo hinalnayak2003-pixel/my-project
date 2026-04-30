@@ -13,7 +13,7 @@ pipeline {
         stage('Pull Latest') {
             steps {
                 sh 'git fetch --all'
-                sh "git pull origin ${env.BRANCH_NAME}"
+                sh 'git pull origin demo'
             }
         }
 
@@ -33,15 +33,12 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo "Building: ${env.BRANCH_NAME}"
+                echo "Building demo branch..."
                 sh 'mvn clean install'
             }
         }
 
         stage('Auto Merge to feature') {
-            when {
-                not { branch 'feature' }
-            }
             steps {
                 sh """
                     git config user.email "jenkins@jenkins.com"
@@ -49,7 +46,7 @@ pipeline {
                     git fetch origin feature
                     git checkout -b feature origin/feature
                     git pull origin feature
-                    git merge origin/${env.BRANCH_NAME} --no-edit
+                    git merge origin/demo --no-edit
                     git push https://hinalnayak2003-pixel:${GITHUB_TOKEN}@github.com/hinalnayak2003-pixel/my-project.git feature
                 """
             }
@@ -58,10 +55,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ ${env.BRANCH_NAME} merged to feature!"
+            echo "✅ demo merged to feature!"
         }
         failure {
-            echo "❌ Failed on ${env.BRANCH_NAME}!"
+            echo "❌ Failed!"
         }
     }
 }
