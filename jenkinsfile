@@ -48,7 +48,8 @@ pipeline {
                     git config user.name "Jenkins"
                     git fetch origin feature
                     git checkout -b feature origin/feature
-                    git merge origin/${env.BRANCH_NAME}
+                    git pull origin feature
+                    git merge origin/${env.BRANCH_NAME} --no-edit
                     git push https://hinalnayak2003-pixel:${GITHUB_TOKEN}@github.com/hinalnayak2003-pixel/my-project.git feature
                 """
             }
