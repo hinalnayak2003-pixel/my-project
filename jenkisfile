@@ -1,0 +1,68 @@
+pipeline {
+    agent any
+
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+
+    environment {
+        GITHUB_TOKEN = credentials('github-token')
+    }
+
+    stages {
+        stage('Pull Latest') {
+            steps {
+                sh 'git fetch --all'
+                sh 'git pull origin demo'
+            }
+        }
+
+        stage('Check Changes') {
+            steps {
+                sh 'git log --oneline -5'
+                sh '''
+                    if [ $(git rev-list --count HEAD) -gt 1 ]; then
+                        echo "=== Changes ==="
+                        git diff HEAD~1 HEAD
+                    else
+                        echo "First commit!"
+                    fi
+                '''
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building demo branch..."
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Auto Merge to feature') {
+            steps {
+                sh """
+                    git config user.email "jenkins@jenkins.com"
+                    git config user.name "Jenkins"
+                    git fetch origin feature
+                    git branch -D feature || true
+                    git checkout -b feature origin/feature
+                    git pull origin feature
+                    git checkout origin/demo -- jenkinsfile
+                    git add jenkinsfile
+                    git commit -m "add jenkinsfile from demo" || true
+                    git merge origin/demo --no-edit -X theirs
+                    git push https://hinalnayak2003-pixel:${GITHUB_TOKEN}@github.com/hinalnayak2003-pixel/my-project.git feature
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ demo merged to feature!"
+        }
+        failure {
+            echo "❌ Failed!"
+        }
+    }
+}
