@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+
+    environment {
+        GITHUB_TOKEN = credentials('github-token')
+    }
+
+    stages {
+        stage('Pull Latest') {
+            steps {
+                sh 'git fetch --all'
+                sh "git pull origin ${env.BRANCH_NAME}"
+            }
+        }
+
+        stage('Check Changes') {
+            steps {
+                sh 'git log --oneline -5'
+                sh '''
+                    if [ $(git rev-list --count HEAD) -gt 1 ]; then
+                        echo "=== Changes ==="
+                        git diff HEAD~1 HEAD
+                    else
+                        echo "First commit!"
+                    fi
+                '''
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building: ${env.BRANCH_NAME}"
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Auto Merge to feature') {
+            when {
+                not { branch 'feature' }
+            }
+            steps {
+                sh """
+                    git config user.email "jenkins@jenkins.com"
+                    git config user.name "Jenkins"
+                    git fetch origin feature
+                    git checkout -b feature origin/feature
+                    git merge origin/${env.BRANCH_NAME}
+                    git push https://hinalnayak2003-pixel:${GITHUB_TOKEN}@github.com/hinalnayak2003-pixel/my-project.git feature
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ ${env.BRANCH_NAME} merged to feature!"
+        }
+        failure {
+            echo "❌ Failed on ${env.BRANCH_NAME}!"
+        }
+    }
+}
