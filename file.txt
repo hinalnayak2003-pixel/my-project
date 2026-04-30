@@ -2,3 +2,6 @@ demo
 hii
 newfile
 main
+main
+feature
+feature
