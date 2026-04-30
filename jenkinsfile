@@ -49,7 +49,7 @@ pipeline {
                         git checkout -b feature origin/feature
                         git pull origin feature
                         git merge origin/demo --no-edit -X theirs
-                        git push https://${GIT_USER}:${GIT_PASS}@github.com/hinalnayak2003-pixel/my-project.git feature
+                        git push https://\${GIT_USER}:\${GIT_PASS}@github.com/hinalnayak2003-pixel/my-project.git feature
                     """
                 }
             }
