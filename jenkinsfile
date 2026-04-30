@@ -40,7 +40,7 @@ pipeline {
 
         stage('Auto Merge to feature') {
             when {
-                not { branch 'feature' }
+                branch 'demo'
             }
             steps {
                 sh """
@@ -48,7 +48,8 @@ pipeline {
                     git config user.name "Jenkins"
                     git fetch origin feature
                     git checkout -b feature origin/feature
-                    git merge origin/${env.BRANCH_NAME}
+                    git pull origin feature
+                    git merge origin/demo --no-edit
                     git push https://hinalnayak2003-pixel:${GITHUB_TOKEN}@github.com/hinalnayak2003-pixel/my-project.git feature
                 """
             }
@@ -57,10 +58,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ ${env.BRANCH_NAME} merged to feature!"
+            echo "✅ demo merged to feature!"
         }
         failure {
-            echo "❌ Failed on ${env.BRANCH_NAME}!"
+            echo "❌ Failed!"
         }
     }
 }
