@@ -44,9 +44,10 @@ pipeline {
                     git config user.email "jenkins@jenkins.com"
                     git config user.name "Jenkins"
                     git fetch origin feature
+                    git branch -D feature || true
                     git checkout -b feature origin/feature
                     git pull origin feature
-                    git merge origin/demo --no-edit
+                    git merge origin/demo --no-edit -X theirs
                     git push https://hinalnayak2003-pixel:${GITHUB_TOKEN}@github.com/hinalnayak2003-pixel/my-project.git feature
                 """
             }
