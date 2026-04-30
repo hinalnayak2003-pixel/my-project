@@ -13,7 +13,7 @@ pipeline {
         stage('Pull Latest') {
             steps {
                 sh 'git fetch --all'
-                sh "git pull origin ${env.BRANCH_NAME}"
+                sh 'git pull origin demo'
             }
         }
 
@@ -33,15 +33,12 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo "Building: ${env.BRANCH_NAME}"
+                echo "Building demo branch..."
                 sh 'mvn clean install'
             }
         }
 
         stage('Auto Merge to feature') {
-            when {
-                branch 'demo'
-            }
             steps {
                 sh """
                     git config user.email "jenkins@jenkins.com"
